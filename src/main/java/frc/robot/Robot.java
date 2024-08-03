@@ -62,11 +62,14 @@ public class Robot extends TimedRobot {
     m_rightFront.configFactoryDefault();
     m_rightBack.configFactoryDefault();
 
-    m_leftFront.setInverted(false);
-    m_rightFront.setInverted(true);
+    m_leftFront.setInverted(LEFT_FRONT_MOTOR_Inverted);
+    m_rightFront.setInverted(RIGHT_FRONT_MOTOR_Inverted);
     
-    m_leftBack.setInverted(false);
-    m_rightBack.setInverted(true);
+    m_leftBack.setInverted(LEFT_BACK_MOTOR_Inverted);
+    m_rightBack.setInverted(RIGHT_BACK_MOTOR_Inverted);
+
+    m_intakeMotor.setInverted(INTAKE_MOTOR_Inverted);
+    m_shooterMotor.setInverted(SHOOTER_MOTOR_Inverted);
    
     
   }
@@ -138,13 +141,13 @@ public class Robot extends TimedRobot {
       m_intakeMotor.set(INTAKE_SPEED);
     }
     if(operatorController.getBButton()){
-      m_intakeMotor.set(-INTAKE_SPEED);
+      m_intakeMotor.set(0);
     }
     if(operatorController.getXButton()){
       m_shooterMotor.set(SHOOTER_SPEED);
     }
     if(operatorController.getYButton()){
-      m_shooterMotor.set(-SHOOTER_SPEED);
+      m_shooterMotor.set(0);
     }
   
   }

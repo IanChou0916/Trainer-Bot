@@ -7,11 +7,22 @@ public class Constants {
 
     // Motor IDs of Victor SPXs
     public static final int LEFT_FRONT_MOTOR_ID = 1;
+    public static final boolean LEFT_FRONT_MOTOR_Inverted = false;
+    
     public static final int LEFT_BACK_MOTOR_ID = 2;
+    public static final boolean LEFT_BACK_MOTOR_Inverted = false;
+
     public static final int RIGHT_FRONT_MOTOR_ID = 3;
+    public static final boolean RIGHT_FRONT_MOTOR_Inverted = true;
+
     public static final int RIGHT_BACK_MOTOR_ID = 4;
+    public static final boolean RIGHT_BACK_MOTOR_Inverted = true;
+
     public static final int INTAKE_MOTOR_ID = 5;
+    public static final boolean INTAKE_MOTOR_Inverted = false;
+
     public static final int SHOOTER_MOTOR_ID = 6;
+    public static final boolean SHOOTER_MOTOR_Inverted = true;
 
     public static final double DEADBAND = 0.05;
 
