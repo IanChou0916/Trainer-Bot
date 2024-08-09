@@ -31,7 +31,14 @@ public class Constants {
     public static final double TURN_SPEED = 0.6;
 
     public static final double INTAKE_SPEED = 1.0;
-    public static final double SHOOTER_SPEED = 1.0;
 
+    public static final double SHOOTER_INCREASE_VALUE = 0.01;
+
+    public static class AutoConstants {
+        public static final double kTimeToDriveForward = 2.0;
+        public static final double kTimeToShoot = 1.0;
+        public static final double kTimeToIntake = 4.0;
+        
+    }
     
 }

@@ -7,8 +7,9 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
-import edu.wpi.first.hal.SimDevice;
+
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
 import static frc.robot.Constants.*;
+import static frc.robot.Constants.AutoConstants.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -42,12 +44,16 @@ public class Robot extends TimedRobot {
 
   private final XboxController driveController = new XboxController(DRIVER_CONTROLLER_PORT);
   private final XboxController operatorController = new XboxController(OPERATOR_CONTROLLER_PORT);
+
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-  
+  private final Timer timer = new Timer();
 
-  
-  
+  private boolean shooterhasOpened = false;
+  private boolean intakehasOpened = false;
 
+  private double shooterSpeed = 1.0;
+  private double intakeSpeed = INTAKE_SPEED;
+  
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -57,12 +63,19 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
 
-    m_leftFront.configFactoryDefault();
-    m_leftBack.configFactoryDefault();
-    m_rightFront.configFactoryDefault();
-    m_rightBack.configFactoryDefault();
+    resetMotors();
+    /*
+     * m_leftFront.configFactoryDefault();
+      m_leftBack.configFactoryDefault();
+      m_rightFront.configFactoryDefault();
+      m_rightBack.configFactoryDefault();
+      m_intakeMotor.configFactoryDefault();
+      m_shooterMotor.configFactoryDefault();
+     */
 
     m_leftFront.setInverted(LEFT_FRONT_MOTOR_Inverted);
+    
+    
     m_rightFront.setInverted(RIGHT_FRONT_MOTOR_Inverted);
     
     m_leftBack.setInverted(LEFT_BACK_MOTOR_Inverted);
@@ -70,8 +83,10 @@ public class Robot extends TimedRobot {
 
     m_intakeMotor.setInverted(INTAKE_MOTOR_Inverted);
     m_shooterMotor.setInverted(SHOOTER_MOTOR_Inverted);
-   
+
+    drive.setDeadband(DEADBAND);
     
+   
   }
 
   /**
@@ -83,6 +98,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    
+    
     m_leftBack.follow(m_leftFront);
     m_rightBack.follow(m_rightFront);
     SmartDashboard.putNumber("leftF",m_leftFront.get());
@@ -91,7 +108,12 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("rightB", m_rightBack.get());
     SmartDashboard.putNumber("shooter",m_shooterMotor.get());
     SmartDashboard.putNumber("intake", m_intakeMotor.get());
+    SmartDashboard.putNumber("speed ", shooterSpeed);
+    SmartDashboard.putBoolean("shooter Enabled " , shooterhasOpened);
+    SmartDashboard.putBoolean("intake Enabled " , intakehasOpened);
+  
     SmartDashboard.updateValues();
+    
   }
 
   /**
@@ -109,6 +131,8 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+    timer.reset();
+    timer.start();
   }
 
   /** This function is called periodically during autonomous. */
@@ -121,6 +145,14 @@ public class Robot extends TimedRobot {
       case kDefaultAuto:
       default:
         // Put default auto code here
+        drive.arcadeDrive((timer.get() < kTimeToDriveForward) ? 0.5 : 0.0, 0.0);
+        m_shooterMotor.set((timer.get() > kTimeToShoot && timer.get()<8.0) ? 1.0 : 0.0);
+        m_intakeMotor.set((timer.get() > kTimeToIntake && timer.get()<6.0) ? 1.0 : 0.0);
+        System.out.println("running");
+        
+        //new WaitCommand(2.0);
+        //drive.arcadeDrive(0.0, 0.0);
+        //System.out.println("compelete");
         break;
     }
   }
@@ -133,23 +165,49 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     
+    
     drive.arcadeDrive(-driveController.getLeftY()*DRIVE_SPEED,-driveController.getRightX()*TURN_SPEED);
     m_leftBack.set(m_leftFront.get());
     m_rightBack.set(m_rightFront.get());
 
-    if(operatorController.getAButton()){
-      m_intakeMotor.set(INTAKE_SPEED);
+    if(operatorController.getLeftBumper() && shooterSpeed >= 0.0){
+     shooterSpeed-=SHOOTER_INCREASE_VALUE;
+     shooterSpeed = Math.max(shooterSpeed, 0.0);
+      
     }
-    if(operatorController.getBButton()){
-      m_intakeMotor.set(0);
+    if(operatorController.getRightBumper() && shooterSpeed <= 1.0){
+      shooterSpeed+=SHOOTER_INCREASE_VALUE;
+      shooterSpeed = Math.min(shooterSpeed, 1.0);
     }
-    if(operatorController.getXButton()){
-      m_shooterMotor.set(SHOOTER_SPEED);
-    }
+    
     if(operatorController.getYButton()){
-      m_shooterMotor.set(0);
+      //timer.start();
+      if(operatorController.getYButtonReleased()){
+        shooterhasOpened = !shooterhasOpened;
+      }
     }
-  
+     m_shooterMotor.set(shooterhasOpened ? shooterSpeed : 0.0 );
+
+
+    if(operatorController.getPOV() == 0){
+      intakeSpeed = INTAKE_SPEED;
+
+    }
+
+    else if(operatorController.getPOV() == 180){
+      intakeSpeed = -INTAKE_SPEED;
+    }
+    
+    if(operatorController.getBButton()){
+      //timer.start();
+      if(operatorController.getBButtonReleased()){
+        intakehasOpened = !intakehasOpened;
+      }
+    }
+
+    m_intakeMotor.set(intakehasOpened ? intakeSpeed : 0.0 );
+    
+
   }
 
   /** This function is called once when the robot is disabled. */
@@ -175,4 +233,13 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+  private void resetMotors(){
+    m_leftFront.configFactoryDefault();
+    m_leftBack.configFactoryDefault();
+    m_rightFront.configFactoryDefault();
+    m_rightBack.configFactoryDefault();
+    m_intakeMotor.configFactoryDefault();
+    m_shooterMotor.configFactoryDefault();
+  }
 }
