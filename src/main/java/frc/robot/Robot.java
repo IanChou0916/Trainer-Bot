@@ -53,6 +53,8 @@ public class Robot extends TimedRobot {
 
   private double shooterSpeed = 1.0;
   private double intakeSpeed = INTAKE_SPEED;
+  private double autoDriveSpeed = 0.0;
+  
   
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -145,10 +147,16 @@ public class Robot extends TimedRobot {
       case kDefaultAuto:
       default:
         // Put default auto code here
-        drive.arcadeDrive((timer.get() < kTimeToDriveForward) ? 0.5 : 0.0, 0.0);
-        m_shooterMotor.set((timer.get() > kTimeToShoot && timer.get()<8.0) ? 1.0 : 0.0);
-        m_intakeMotor.set((timer.get() > kTimeToIntake && timer.get()<6.0) ? 1.0 : 0.0);
+        if((timer.get() < kTimeToDriveForward) || timerReleased(7.0, 2.0) ) autoDriveSpeed = 0.5;
+        else if(timer.get()>9.0 && timer.get()<11.0) autoDriveSpeed = -0.5;
+        else if(timer.get()>13.5) autoDriveSpeed = 0.66;
+        else autoDriveSpeed = 0.0;
+        drive.arcadeDrive(autoDriveSpeed, 0.0);
+        m_shooterMotor.set(((timer.get() > kTimeToShoot && timer.get()<6.0) ||(timer.get() > 9.0 && timer.get()<13.0)) ? 1.0 : 0.0);
+        m_intakeMotor.set(((timer.get() > kTimeToIntake && timer.get()<6.0)|| (timer.get()>7.0 && timer.get()<12.0)) ? 1.0 : 0.0);
+        
         System.out.println("running");
+        
         
         //new WaitCommand(2.0);
         //drive.arcadeDrive(0.0, 0.0);
@@ -242,4 +250,7 @@ public class Robot extends TimedRobot {
     m_intakeMotor.configFactoryDefault();
     m_shooterMotor.configFactoryDefault();
   }
+  private boolean timerReleased( double startTime, double releaseTime){
+    return (timer.get()>startTime && timer.get()<(startTime+releaseTime));
+  } // function to check autonomous period. 
 }

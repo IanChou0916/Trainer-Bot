@@ -41,4 +41,11 @@ public class Constants {
         
     }
     
+    public static enum autoStatus {
+        PRELOAD,
+        GETNOTE,
+        BACKSHOOT,
+        LEAVE
+    }
+    
 }
