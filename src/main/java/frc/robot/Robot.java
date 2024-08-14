@@ -5,6 +5,7 @@
 package frc.robot;
 
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 
@@ -74,6 +75,7 @@ public class Robot extends TimedRobot {
       m_intakeMotor.configFactoryDefault();
       m_shooterMotor.configFactoryDefault();
      */
+    
 
     m_leftFront.setInverted(LEFT_FRONT_MOTOR_Inverted);
     
@@ -86,9 +88,10 @@ public class Robot extends TimedRobot {
     m_intakeMotor.setInverted(INTAKE_MOTOR_Inverted);
     m_shooterMotor.setInverted(SHOOTER_MOTOR_Inverted);
 
+    setMotorsBrake();
+
     drive.setDeadband(DEADBAND);
-    
-   
+ 
   }
 
   /**
@@ -253,4 +256,16 @@ public class Robot extends TimedRobot {
   private boolean timerReleased( double startTime, double releaseTime){
     return (timer.get()>startTime && timer.get()<(startTime+releaseTime));
   } // function to check autonomous period. 
+
+  private void setVictorSPXBrake(WPI_VictorSPX motor){
+    motor.setNeutralMode(NeutralMode.Brake);
+  }
+  private void setMotorsBrake(){
+    setVictorSPXBrake(m_leftFront);
+    setVictorSPXBrake(m_leftBack);
+    setVictorSPXBrake(m_rightFront);
+    setVictorSPXBrake(m_rightBack);
+    setVictorSPXBrake(m_intakeMotor);
+    setVictorSPXBrake(m_shooterMotor);
+  }
 }
